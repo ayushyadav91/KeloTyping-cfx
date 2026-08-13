@@ -1,13 +1,15 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import "./index.css";
+import express from "express";
 
-const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement
-);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+const app = express();
+
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("Server is running successfully!");
+});
+
+const PORT = 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
