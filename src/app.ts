@@ -4,34 +4,23 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 
-import authRoutes from "./routes/authRoutes";
-import resultRoutes from "./routes/resultRoutes";
-import { errorHandler, notFound } from "./middleware/errorHandler";
+import authRoutes from "./routes/auth.route";
+import resultRoutes from "./routes/result.route";
+import { errorHandler, notFound } from "./middleware/errorHandler.middleware";
+import { env } from "./config/env.config";
 
 const app = express();
 
-// Security headers
 app.use(helmet());
-
-// CORS - only allow the configured frontend origin
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    credentials: true,
-  })
-);
-
-// Body parsing
+app.use(cors({ origin: env.clientUrl, credentials: true }));
 app.use(express.json());
 
-// Request logging (skip in test env)
-if (process.env.NODE_ENV !== "test") {
+if (env.nodeEnv !== "test") {
   app.use(morgan("dev"));
 }
 
-// Basic rate limiting to slow down brute-force attempts on auth routes
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 50,
   standardHeaders: true,
   legacyHeaders: false,
@@ -39,16 +28,13 @@ const authLimiter = rateLimit({
 });
 app.use("/api/auth", authLimiter);
 
-// Health check
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "API is running" });
 });
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/results", resultRoutes);
 
-// 404 + error handler (must be last)
 app.use(notFound);
 app.use(errorHandler);
 

@@ -1,15 +1,9 @@
 import mongoose from "mongoose";
+import { env } from "./env.config";
 
-const connectDB = async (): Promise<void> => {
-  const uri = process.env.MONGO_URI;
-
-  if (!uri) {
-    console.error("MONGO_URI is not set in the environment");
-    process.exit(1);
-  }
-
+export const connectDB = async (): Promise<void> => {
   try {
-    const conn = await mongoose.connect(uri);
+    const conn = await mongoose.connect(env.mongoUri);
     console.log(`MongoDB connected: ${conn.connection.host}`);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -17,5 +11,3 @@ const connectDB = async (): Promise<void> => {
     process.exit(1);
   }
 };
-
-export default connectDB;

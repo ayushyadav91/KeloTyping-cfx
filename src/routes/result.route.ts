@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { createResult, getMyResults, getLeaderboard } from "../controllers/resultController";
-import { protect } from "../middleware/auth";
+import { createResult, getMyResults, getLeaderboard } from "../controllers/result.controller";
+import { protect } from "../middleware/auth.middleware";
 
 const router = Router();
 

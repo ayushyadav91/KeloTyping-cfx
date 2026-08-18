@@ -1,39 +1,35 @@
 import { NextFunction, Request, Response } from "express";
+import { ErrorResponse } from "../utils/errorResponse";
 
-interface AppError extends Error {
+interface MongooseLikeError extends Error {
   statusCode?: number;
   code?: number;
   keyValue?: Record<string, unknown>;
   errors?: Record<string, { message: string }>;
 }
 
-// Centralized error handler. Any next(err) call or thrown error inside an
-// async route (wrapped with asyncHandler) ends up here.
 export const errorHandler = (
-  err: AppError,
+  err: MongooseLikeError | ErrorResponse,
   req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ): void => {
-  let statusCode = err.statusCode && err.statusCode !== 200 ? err.statusCode : 500;
+  let statusCode = "statusCode" in err && err.statusCode ? err.statusCode : 500;
   let message = err.message || "Server error";
 
-  // Mongoose bad ObjectId
   if (err.name === "CastError") {
     statusCode = 404;
     message = "Resource not found";
   }
 
-  // Mongoose duplicate key
-  if (err.code === 11000) {
+  if ("code" in err && err.code === 11000) {
     statusCode = 400;
-    const field = Object.keys(err.keyValue || {})[0];
+    const field = Object.keys((err as MongooseLikeError).keyValue || {})[0];
     message = `${field ? field : "Field"} already in use`;
   }
 
-  // Mongoose validation error
-  if (err.name === "ValidationError" && err.errors) {
+  if (err.name === "ValidationError" && "errors" in err && err.errors) {
     statusCode = 400;
     message = Object.values(err.errors)
       .map((val) => val.message)

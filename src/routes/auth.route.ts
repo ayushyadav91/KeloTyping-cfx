@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { register, login, getMe } from "../controllers/authController";
-import { protect } from "../middleware/auth";
+import { register, login, getMe, googleLogin } from "../controllers/auth.controller";
+import { protect } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -23,6 +23,8 @@ router.post(
   ],
   login
 );
+
+router.post("/google", [body("idToken", "idToken is required").notEmpty().isString()], googleLogin);
 
 router.get("/me", protect, getMe);
 
