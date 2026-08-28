@@ -8,6 +8,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   CORS_ORIGIN: z.string().default('*'),
   MOCK_AUTH_TOKEN: z.string().default('mock_token_xyz'),
+  CLIENT_APP_URL: z.string().default('http://localhost:3000'),
+  INVITE_LINK_SECRET: z.string().default('kelo_invite_secret_key_32bytes_change_in_prod'),
   SESSION_TTL_MINUTES: z.coerce.number().positive().default(15),
   CLEANUP_INTERVAL_MINUTES: z.coerce.number().positive().default(5),
   MAX_TYPING_VELOCITY_CHARS_PER_50MS: z.coerce.number().positive().default(10),

@@ -13,9 +13,9 @@ export class TypingService {
     this.startGarbageCollector();
   }
 
-  /**
-   * Initializes a new typing practice session for a user.
-   */
+  
+    // Initializes a new typing practice session for a user.
+   
   public startSession(userId: string, targetPromptId?: string): SoloSession {
     const prompt = targetPromptId
       ? promptsService.getPromptById(targetPromptId) || promptsService.getRandomPrompt()
@@ -54,10 +54,10 @@ export class TypingService {
     return session;
   }
 
-  /**
-   * Evaluates keystroke progress and calculates real-time metrics.
-   * Enforces human velocity thresholds (charDelta > 8 in < 200ms or instant WPM > 250 WPM) to prevent bot manipulation.
-   */
+  
+  // Evaluates keystroke progress and calculates real-time metrics.
+  //  Enforces human velocity thresholds (charDelta > 8 in < 200ms or instant WPM > 250 WPM) to prevent bot manipulation.
+   
   public processProgress(
     sessionId: string,
     typedIndex: number,
@@ -140,9 +140,8 @@ export class TypingService {
     return this.sessionsMap.delete(sessionId);
   }
 
-  /**
-   * Periodic garbage collection to remove expired/inactive session records.
-   */
+//  garbage collection to remove expired/inactive session records.
+   
   private startGarbageCollector(): void {
     const intervalMs = env.CLEANUP_INTERVAL_MINUTES * 60 * 1000;
     const ttlMs = env.SESSION_TTL_MINUTES * 60 * 1000;

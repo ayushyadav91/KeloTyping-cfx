@@ -5,7 +5,9 @@ import { env } from './config/env.config';
 import { logger } from './utils/logger';
 import { socketAuthMiddleware } from './middlewares/authMiddleware';
 import { registerTypingSocketHandlers } from './controllers/typing.socket';
+import { registerMultiplayerSocketHandlers } from './controllers/multiplayer.socket';
 import { typingService } from './controllers/typing.service';
+import { multiplayerService } from './controllers/multiplayer.service';
 import {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -33,6 +35,7 @@ io.use(socketAuthMiddleware);
 
 io.on('connection', (socket) => {
   registerTypingSocketHandlers(io, socket);
+  registerMultiplayerSocketHandlers(io, socket);
 });
 
 httpServer.listen(env.PORT, () => {
@@ -47,6 +50,7 @@ const gracefulShutdown = (signal: string) => {
   logger.warn(`Received ${signal} signal. Initiating graceful shutdown...`);
 
   typingService.stopCleanupTimer();
+  multiplayerService.stopCleanupTimer();
 
   io.close(() => {
     logger.info('Socket.IO server closed active connections.');

@@ -14,9 +14,6 @@ export class SocketRateLimiter {
 
   constructor(private config: RateLimitConfig = { windowMs: 1000, maxEvents: 30 }) {}
 
-  /*
-    Evaluates if a socket connection is within permitted event rate threshold.
-   */
   public isAllowed(socketId: string): boolean {
     const now = Date.now();
     const timestamps = this.eventTimestamps.get(socketId) || [];
@@ -31,9 +28,6 @@ export class SocketRateLimiter {
     return true;
   }
 
-  /*
-    Purges tracking state for a disconnected socket ID.
-   */
   public removeSocket(socketId: string): void {
     this.eventTimestamps.delete(socketId);
   }

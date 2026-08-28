@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env.config';
 import { promptsRouter } from './routes/prompts.routes';
 import { typingService } from './controllers/typing.service';
+import { multiplayerService } from './controllers/multiplayer.service';
 import { logger } from './utils/logger';
 
 export const app: Express = express();
@@ -34,7 +35,8 @@ app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'OK',
     environment: env.NODE_ENV,
-    activeSessions: typingService.getActiveSessionsCount(),
+    activeSoloSessions: typingService.getActiveSessionsCount(),
+    activeMultiplayerRooms: multiplayerService.getActiveRoomsCount(),
     timestamp: new Date().toISOString(),
   });
 });

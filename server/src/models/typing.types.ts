@@ -66,12 +66,19 @@ export interface SocketErrorPayload {
   timestamp: number;
 }
 
-export interface ClientToServerEvents {
+import {
+  MultiplayerClientToServerEvents,
+  MultiplayerServerToClientEvents,
+} from './multiplayer.types';
+
+export interface ClientToServerEvents
+  extends MultiplayerClientToServerEvents {
   start_solo_session: (payload?: StartSoloSessionPayload) => void;
   typing_progress: (payload: TypingProgressPayload) => void;
 }
 
-export interface ServerToClientEvents {
+export interface ServerToClientEvents
+  extends MultiplayerServerToClientEvents {
   session_started: (payload: SessionStartedPayload) => void;
   stats_update: (payload: StatsUpdatePayload) => void;
   session_summary: (payload: SessionSummaryPayload) => void;
@@ -84,7 +91,10 @@ export interface InterServerEvents {
 
 export interface SocketData {
   user?: AuthenticatedUser;
+  userId?: string;
+  username?: string;
   lastProgressTimestamp?: number;
   lastTypedIndex?: number;
+  roomCode?: string;
 }
 
