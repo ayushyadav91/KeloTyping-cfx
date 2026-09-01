@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
-import { validationResult } from "express-validator";
-import Result from "../models/result.model";
-import User from "../models/user.model";
-import asyncHandler from "../utils/asyncHandler";
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+import Result from '../models/result.model';
+import User from '../models/user.model';
+import asyncHandler from '../utils/asyncHandler';
 
 // @desc    Save a solo typing test result
 // @route   POST /api/results
@@ -46,17 +46,17 @@ export const getMyResults = asyncHandler(async (req: Request, res: Response) => 
   res.status(200).json({ success: true, count: results.length, results });
 });
 
-// @desc    Public leaderboard
+// @desc    Public leaderboard (solo best scores)
 // @route   GET /api/results/leaderboard
 export const getLeaderboard = asyncHandler(async (req: Request, res: Response) => {
   const limit = Math.min(parseInt(String(req.query.limit), 10) || 10, 100);
 
-  const results = await Result.find().sort({ wpm: -1 }).limit(limit).populate("userId", "username");
+  const results = await Result.find().sort({ wpm: -1 }).limit(limit).populate('userId', 'username');
 
   const leaderboard = results.map((r) => {
     const populatedUser = r.userId as unknown as { username?: string } | null;
     return {
-      username: populatedUser?.username || "Unknown",
+      username: populatedUser?.username || 'Unknown',
       wpm: r.wpm,
       accuracy: r.accuracy,
       date: r.createdAt,

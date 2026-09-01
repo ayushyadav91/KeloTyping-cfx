@@ -1,8 +1,8 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
-import bcrypt from "bcryptjs";
-import { v4 as uuidv4 } from "uuid";
+import mongoose, { Document, Model, Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
 
-export type AuthProvider = "local" | "google";
+export type AuthProvider = 'local' | 'google';
 
 export interface IUser extends Document<string> {
   _id: string; // UUID, not ObjectId
@@ -13,6 +13,8 @@ export interface IUser extends Document<string> {
   googleId?: string;
   avatar?: string;
   bestWpm: number;
+  matchesPlayed: number;
+  matchesWon: number;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -26,7 +28,7 @@ const UserSchema = new Schema<IUser>(
     },
     username: {
       type: String,
-      required: [true, "Username is required"],
+      required: [true, 'Username is required'],
       unique: true,
       trim: true,
       minlength: 3,
@@ -34,11 +36,11 @@ const UserSchema = new Schema<IUser>(
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: [true, 'Email is required'],
       unique: true,
       trim: true,
       lowercase: true,
-      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
+      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
     },
     password: {
       type: String,
@@ -47,8 +49,8 @@ const UserSchema = new Schema<IUser>(
     },
     authProvider: {
       type: String,
-      enum: ["local", "google"],
-      default: "local",
+      enum: ['local', 'google'],
+      default: 'local',
     },
     googleId: {
       type: String,
@@ -62,19 +64,27 @@ const UserSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
+    matchesPlayed: {
+      type: Number,
+      default: 0,
+    },
+    matchesWon: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true, _id: false } // _id defined manually above (UUID string, not ObjectId)
 );
 
-UserSchema.pre("validate", function (next) {
-  if (this.authProvider === "local" && !this.password) {
-    this.invalidate("password", "Password is required for local accounts");
+UserSchema.pre('validate', function (next) {
+  if (this.authProvider === 'local' && !this.password) {
+    this.invalidate('password', 'Password is required for local accounts');
   }
   next();
 });
 
-UserSchema.pre("save", async function (next) {
-  if (!this.password || !this.isModified("password")) return next();
+UserSchema.pre('save', async function (next) {
+  if (!this.password || !this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
@@ -88,5 +98,5 @@ UserSchema.methods.comparePassword = async function (
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const User: Model<IUser> = mongoose.model<IUser>("User", UserSchema);
+const User: Model<IUser> = mongoose.model<IUser>('User', UserSchema);
 export default User;

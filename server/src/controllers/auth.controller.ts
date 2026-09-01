@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
-import { validationResult } from "express-validator";
-import User from "../models/user.model";
-import generateToken from "../utils/generateToken";
-import asyncHandler from "../utils/asyncHandler";
-import { ErrorResponse } from "../utils/errorResponse";
-import { verifyGoogleToken } from "../config/googleAuth.config";
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+import User from '../models/user.model';
+import generateToken from '../utils/generateToken';
+import asyncHandler from '../utils/asyncHandler';
+import { ErrorResponse } from '../utils/errorResponse';
+import { verifyGoogleToken } from '../config/googleAuth.config';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -18,7 +18,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   const { username, email, password } = req.body as { username: string; email: string; password: string };
 
   const existing = await User.findOne({ $or: [{ email }, { username }] });
-  if (existing) throw new ErrorResponse("A user with that email or username already exists", 400);
+  if (existing) throw new ErrorResponse('A user with that email or username already exists', 400);
 
   const user = await User.create({ username, email, password });
   const token = generateToken(user._id);
@@ -41,9 +41,9 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   const { email, password } = req.body as { email: string; password: string };
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email }).select('+password');
   if (!user || !(await user.comparePassword(password))) {
-    throw new ErrorResponse("Invalid credentials", 401);
+    throw new ErrorResponse('Invalid credentials', 401);
   }
 
   const token = generateToken(user._id);
@@ -66,13 +66,15 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
       username: user.username,
       email: user.email,
       bestWpm: user.bestWpm,
+      matchesPlayed: user.matchesPlayed,
+      matchesWon: user.matchesWon,
       createdAt: user.createdAt,
     },
   });
 });
 
 const generateUniqueUsername = async (base: string): Promise<string> => {
-  const clean = base.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 15) || "player";
+  const clean = base.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 15) || 'player';
   let candidate = clean;
   let attempts = 0;
 
@@ -101,10 +103,10 @@ export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
   try {
     profile = await verifyGoogleToken(idToken);
   } catch {
-    throw new ErrorResponse("Invalid or expired Google token", 401);
+    throw new ErrorResponse('Invalid or expired Google token', 401);
   }
 
-  if (!profile.emailVerified) throw new ErrorResponse("Google email is not verified", 401);
+  if (!profile.emailVerified) throw new ErrorResponse('Google email is not verified', 401);
 
   let user = await User.findOne({ googleId: profile.googleId });
 
@@ -121,7 +123,7 @@ export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
         username,
         email: profile.email,
         googleId: profile.googleId,
-        authProvider: "google",
+        authProvider: 'google',
         avatar: profile.avatar,
       });
     }

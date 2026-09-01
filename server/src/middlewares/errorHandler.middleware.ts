@@ -1,5 +1,6 @@
-import { NextFunction, Request, Response } from "express";
-import { ErrorResponse } from "../utils/errorResponse";
+import { NextFunction, Request, Response } from 'express';
+import { ErrorResponse } from '../utils/errorResponse';
+import { logger } from '../utils/logger';
 
 interface MongooseLikeError extends Error {
   statusCode?: number;
@@ -15,31 +16,35 @@ export const errorHandler = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ): void => {
-  let statusCode = "statusCode" in err && err.statusCode ? err.statusCode : 500;
-  let message = err.message || "Server error";
+  let statusCode = 'statusCode' in err && err.statusCode ? err.statusCode : 500;
+  let message = err.message || 'Server error';
 
-  if (err.name === "CastError") {
+  if (err.name === 'CastError') {
     statusCode = 404;
-    message = "Resource not found";
+    message = 'Resource not found';
   }
 
-  if ("code" in err && err.code === 11000) {
+  if ('code' in err && err.code === 11000) {
     statusCode = 400;
     const field = Object.keys((err as MongooseLikeError).keyValue || {})[0];
-    message = `${field ? field : "Field"} already in use`;
+    message = `${field ? field : 'Field'} already in use`;
   }
 
-  if (err.name === "ValidationError" && "errors" in err && err.errors) {
+  if (err.name === 'ValidationError' && 'errors' in err && err.errors) {
     statusCode = 400;
     message = Object.values(err.errors)
       .map((val) => val.message)
-      .join(", ");
+      .join(', ');
+  }
+
+  if (statusCode >= 500) {
+    logger.error('Unhandled REST error', { message: err.message, stack: err.stack, path: req.originalUrl });
   }
 
   res.status(statusCode).json({
     success: false,
     message,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
 

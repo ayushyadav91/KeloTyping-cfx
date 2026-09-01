@@ -1,40 +1,44 @@
 {
   "name": "kelo-typing-server",
   "version": "1.0.0",
-  "description": "KeloTyping backend - MVC structure, MongoDB + UUID primary keys, JWT + Google OAuth, Socket.IO multiplayer",
+  "description": "KeloTyping backend - real-time solo & multiplayer typing engine (Socket.IO), JWT + Google OAuth, MongoDB persistence",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx --watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
   },
+  "keywords": [],
+  "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.17",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/morgan": "^1.9.9",
-    "@types/node": "^25.9.2",
-    "@types/swagger-ui-express": "^4.1.8",
+    "@types/node": "^25.9.5",
     "@types/uuid": "^10.0.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "@types/swagger-ui-express": "^4.1.8",
     "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-rate-limit": "^7.4.0",
+    "express-rate-limit": "^8.6.2",
     "express-validator": "^7.2.0",
     "google-auth-library": "^9.14.1",
-    "helmet": "^7.1.0",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.0",
-    "morgan": "^1.10.0",
+    "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "winston": "^3.19.0",
+    "zod": "^4.4.3"
   }
 }

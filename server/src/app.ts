@@ -1,59 +1,84 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import rateLimit from "express-rate-limit";
-import swaggerUi from "swagger-ui-express";
+import express, { Express, Request, Response } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
+import { env } from './config/env.config';
+import { promptsRouter } from './routes/prompts.routes';
+import authRoutes from './routes/auth.route';
+import resultRoutes from './routes/result.route';
+import { typingService } from './controllers/typing.service';
+import { roomService } from './controllers/room.service';
+import { errorHandler, notFound } from './middlewares/errorHandler.middleware';
+import { openApiSpec } from './docs/openapi';
+import { logger } from './utils/logger';
 
-import authRoutes from "./routes/auth.route";
-import resultRoutes from "./routes/result.route";
-import { errorHandler, notFound } from "./middleware/errorHandler.middleware";
-import { env } from "./config/env.config";
-import { swaggerSpec } from "./config/swagger.config";
+export const app: Express = express();
 
-const app = express();
+// helmet's default CSP blocks the inline scripts/styles Swagger UI's HTML needs,
+// so it's relaxed only for the /api-docs path below — everywhere else keeps the default.
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api-docs')) {
+    helmet({ contentSecurityPolicy: false })(req, res, next);
+  } else {
+    helmet()(req, res, next);
+  }
+});
+app.use(
+  cors({
+    origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  })
+);
 
-// helmet's default CSP blocks Swagger UI's inline scripts/styles, so it's
-// disabled here. Fine for this API-only backend; re-enable and add a
-// route-specific CSP exception if this app ever serves other HTML pages.
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: env.clientUrl, credentials: true }));
-app.use(express.json());
+const httpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many requests from this IP, please try again later.' },
+});
+app.use(httpLimiter);
 
-if (env.nodeEnv !== "test") {
-  app.use(morgan("dev"));
-}
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, message: "Too many requests, please try again later" },
+  message: { success: false, message: 'Too many requests, please try again later' },
 });
-app.use("/api/auth", authLimiter);
+app.use('/api/auth', authLimiter);
 
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ success: true, message: "API is running" });
+app.get('/health', (_req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'OK',
+    environment: env.NODE_ENV,
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    activeSoloSessions: typingService.getActiveSessionsCount(),
+    activeRooms: roomService.getActiveRoomsCount(),
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// Interactive API docs — http://localhost:3000/api/docs
+app.use('/api/prompts', promptsRouter);
+app.use('/api/auth', authRoutes);
+app.use('/api/results', resultRoutes);
+
 app.use(
-  "/api/docs",
+  '/api-docs',
   swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec, {
-    customSiteTitle: "KeloTyping API Docs",
+  swaggerUi.setup(openApiSpec, {
+    customSiteTitle: 'KeloTyping API Docs',
   })
 );
-// Raw OpenAPI JSON, useful for importing into Postman/Insomnia
-app.get("/api/docs.json", (req, res) => {
-  res.json(swaggerSpec);
+app.get('/api-docs.json', (_req: Request, res: Response) => {
+  res.json(openApiSpec);
 });
-
-app.use("/api/auth", authRoutes);
-app.use("/api/results", resultRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
-
-export default app;

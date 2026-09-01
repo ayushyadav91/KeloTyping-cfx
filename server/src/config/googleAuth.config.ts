@@ -5,8 +5,8 @@ let client: OAuth2Client | null = null;
 
 const getClient = (): OAuth2Client => {
   if (!client) {
-    if (!env.googleClientId) throw new Error("GOOGLE_CLIENT_ID is not set in the environment");
-    client = new OAuth2Client(env.googleClientId);
+    if (!env.GOOGLE_CLIENT_ID) throw new Error("GOOGLE_CLIENT_ID is not set in the environment");
+    client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
   }
   return client;
 };
@@ -20,10 +20,10 @@ export interface GoogleProfile {
 }
 
 export const verifyGoogleToken = async (idToken: string): Promise<GoogleProfile> => {
-  if (!env.googleClientId) throw new Error("GOOGLE_CLIENT_ID is not set in the environment");
+  if (!env.GOOGLE_CLIENT_ID) throw new Error("GOOGLE_CLIENT_ID is not set in the environment");
 
   const oauthClient = getClient();
-  const ticket = await oauthClient.verifyIdToken({ idToken, audience: env.googleClientId });
+  const ticket = await oauthClient.verifyIdToken({ idToken, audience: env.GOOGLE_CLIENT_ID });
   const payload = ticket.getPayload();
 
   if (!payload || !payload.sub || !payload.email) {
