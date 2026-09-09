@@ -1,0 +1,84 @@
+.auth-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% -10%, rgba(139,92,246,0.15) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(34,211,238,0.08) 0%, transparent 60%),
+    var(--bg-primary);
+}
+
+/* Grid overlay */
+.auth-layout__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.auth-layout__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+}
+
+/* Particles */
+.auth-layout__particle {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 50%;
+  background: var(--accent-violet);
+  animation: floatUp linear infinite;
+  pointer-events: none;
+  opacity: 0.4;
+  filter: blur(1px);
+}
+
+/* Header */
+.auth-layout__header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  animation: fadeInDown 0.5s ease forwards;
+}
+
+.auth-layout__tagline {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-violet-bright);
+  letter-spacing: 0.14em;
+  opacity: 0.8;
+}
+
+/* Card */
+.auth-layout__card {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(10, 16, 38, 0.9);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(139,92,246,0.15);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 60px rgba(139,92,246,0.08),
+    inset 0 1px 0 var(--border-subtle);
+  position: relative;
+  z-index: 1;
+  animation: fadeInScale 0.5s ease forwards;
+}

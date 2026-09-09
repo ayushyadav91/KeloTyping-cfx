@@ -1,0 +1,30 @@
+.kcard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.kcard--elevated {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+  padding: var(--space-4);
+}
+
+.kcard--clickable {
+  cursor: pointer;
+}
+.kcard--clickable:hover {
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  transition: all var(--transition-fast);
+}
+.kcard--clickable:active { transform: translateY(0); }
+
+.kcard--glow-cyan   { border-color: rgba(0,212,212,0.25); box-shadow: var(--shadow-card), 0 0 20px rgba(0,212,212,0.1); }
+.kcard--glow-success { border-color: rgba(57,211,83,0.25); box-shadow: var(--shadow-card), 0 0 20px rgba(57,211,83,0.1); }
+.kcard--glow-danger  { border-color: rgba(248,81,73,0.25);  box-shadow: var(--shadow-card), 0 0 20px rgba(248,81,73,0.1); }
+.kcard--glow-warning { border-color: rgba(227,179,65,0.25); box-shadow: var(--shadow-card), 0 0 20px rgba(227,179,65,0.1); }
