@@ -1,13 +1,16 @@
+import { BrowserRouter } from 'react-router-dom';
+import { AppProvider } from './store/AppContext';
+import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
+import AppRouter from './router/AppRouter';
 
-function App() {
-
-
+export default function App() {
   return (
-   <div>
-      <h1 className="text-3xl font-bold font-stretch-105% text-center text-green-500">Kelotyping</h1>
-   </div>
-      
-  )
+    <ErrorBoundary>
+      <AppProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </AppProvider>
+    </ErrorBoundary>
+  );
 }
-
-export default App

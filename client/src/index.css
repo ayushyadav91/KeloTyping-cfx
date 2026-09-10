@@ -1,1 +1,284 @@
-@import "tailwindcss";
+/* ============================================================
+   KELOTYPING — Global Design System v2
+   Deep navy · Electric violet · Neon cyan · Rose
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+/* ──────────────────────────────────────────
+   Design Tokens
+────────────────────────────────────────── */
+:root {
+  /* Backgrounds (Dark Mode - True Black) */
+  --bg-primary:   #000000;
+  --bg-primary-trans: rgba(0, 0, 0, 0.8);
+  --bg-secondary: #050505;
+  --bg-secondary-trans: rgba(5, 5, 5, 0.9);
+  --bg-card:      #111111;
+  --bg-card-trans: rgba(17, 17, 17, 0.8);
+  --bg-elevated:  #111111;
+  --bg-elevated-trans: rgba(17, 17, 17, 0.95);
+  --bg-input:     #141414;
+  --bg-hover:     #1a1a1a;
+
+  /* Violet — primary interactions, buttons, active states */
+  --accent-violet:      #9333ea;
+  --accent-violet-dim:  #7e22ce;
+  --accent-violet-bright: #c084fc;
+  --accent-violet-glow: rgba(147, 51, 234, 0.28);
+  --accent-violet-glow-strong: rgba(147, 51, 234, 0.5);
+
+  /* Cyan is now remapped to Purple tones for glowing lines */
+  --accent-cyan:      #a855f7;
+  --accent-cyan-dim:  #9333ea;
+  --accent-cyan-glow: rgba(168, 85, 247, 0.22);
+  --accent-cyan-glow-strong: rgba(168, 85, 247, 0.45);
+
+  /* Teal -> deeper purple */
+  --accent-teal:      #7e22ce;
+  --accent-teal-glow: rgba(126, 34, 206, 0.22);
+
+  /* Rose — errors (kept red/pink for semantic errors) */
+  --accent-rose:      #f43f5e;
+  --accent-rose-dim:  #e11d48;
+  --accent-rose-glow: rgba(244, 63, 94, 0.22);
+
+  /* Gold — rankings, streaks */
+  --accent-gold:      #f59e0b;
+  --accent-gold-dim:  #d97706;
+  --accent-gold-glow: rgba(245, 158, 11, 0.22);
+
+  /* Text */
+  --text-primary:   #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted:     #475569;
+  --text-inverse:   #000000;
+
+  /* Semantic */
+  --success:      #10b981;
+  --success-dim:  #059669;
+  --success-glow: rgba(16, 185, 129, 0.22);
+  --danger:       #f43f5e;
+  --danger-dim:   #e11d48;
+  --danger-glow:  rgba(244, 63, 94, 0.22);
+  --warning:      #f59e0b;
+  --warning-dim:  #d97706;
+  --warning-glow: rgba(245, 158, 11, 0.22);
+  --info:         #a855f7;
+
+  /* Borders */
+  --border-subtle:  rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-strong:  rgba(255, 255, 255, 0.2);
+  --border-accent:  rgba(147, 51, 234, 0.4);
+  --border-cyan:    rgba(168, 85, 247, 0.35);
+
+  /* Shadows */
+  --shadow-sm:       0 1px 4px rgba(0, 0, 0, 0.7);
+  --shadow-md:       0 4px 20px rgba(0, 0, 0, 0.75);
+  --shadow-lg:       0 8px 40px rgba(0, 0, 0, 0.85);
+  --shadow-violet:   0 0 28px rgba(147, 51, 234, 0.35);
+  --shadow-cyan:     0 0 24px rgba(168, 85, 247, 0.3);
+  --shadow-card:     0 2px 12px rgba(0, 0, 0, 0.6), inset 0 1px 0 var(--border-subtle);
+
+  /* Border Radius */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-2xl:  32px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Typography */
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Z-index */
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-modal:    300;
+  --z-toast:    400;
+  --z-overlay:  500;
+}
+
+:root[data-theme='light'] {
+  /* Backgrounds (Light Mode) */
+  --bg-primary:   #f4f6f8;
+  --bg-primary-trans: rgba(244, 246, 248, 0.8);
+  --bg-secondary: #eef2f6;
+  --bg-secondary-trans: rgba(238, 242, 246, 0.9);
+  --bg-card:      #ffffff;
+  --bg-card-trans: rgba(255, 255, 255, 0.95);
+  --bg-elevated:  #e2e8f0;
+  --bg-elevated-trans: rgba(226, 232, 240, 0.95);
+  --bg-input:     #f8fafc;
+  --bg-hover:     #e2e8f0;
+
+  /* Text */
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+  --text-inverse:   #ffffff;
+
+  /* Borders */
+  --border-subtle:  rgba(148, 163, 184, 0.15);
+  --border-default: rgba(148, 163, 184, 0.25);
+  --border-strong:  rgba(148, 163, 184, 0.4);
+
+  /* Shadows */
+  --shadow-sm:       0 1px 4px rgba(148, 163, 184, 0.1);
+  --shadow-md:       0 4px 20px rgba(148, 163, 184, 0.15);
+  --shadow-lg:       0 8px 40px rgba(148, 163, 184, 0.2);
+  --shadow-card:     0 4px 16px rgba(148, 163, 184, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* ──────────────────────────────────────────
+   CSS Reset & Base
+────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ──────────────────────────────────────────
+   Typography
+────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+p { line-height: 1.7; }
+
+a {
+  color: var(--accent-violet);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover { color: var(--accent-violet-bright); }
+
+code, pre { font-family: var(--font-mono); }
+
+/* ──────────────────────────────────────────
+   Form Elements Reset
+────────────────────────────────────────── */
+input, textarea, button, select {
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  border: none;
+  background: none;
+}
+
+button {
+  cursor: pointer;
+  user-select: none;
+}
+
+input::placeholder { color: var(--text-muted); }
+
+/* ──────────────────────────────────────────
+   Scrollbar
+────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent-violet-dim); }
+
+/* ──────────────────────────────────────────
+   Selection
+────────────────────────────────────────── */
+::selection {
+  background-color: rgba(139, 92, 246, 0.25);
+  color: var(--accent-violet-bright);
+}
+
+/* ──────────────────────────────────────────
+   Global gradient text utility
+────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text--gold {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ──────────────────────────────────────────
+   Global glow card
+────────────────────────────────────────── */
+.glass-card {
+  background: var(--bg-card-trans);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
