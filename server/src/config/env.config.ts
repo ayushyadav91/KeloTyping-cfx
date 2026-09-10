@@ -8,9 +8,24 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   CORS_ORIGIN: z.string().default('*'),
   MOCK_AUTH_TOKEN: z.string().default('mock_token_xyz'),
+
+  // Database
+  MONGO_URI: z.string().default('mongodb://localhost:27017/kelotyping'),
+
+  // Auth
+  JWT_SECRET: z.string().default('dev_jwt_secret_key_12345'),
+  JWT_EXPIRES_IN: z.string().default('7d'),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+
+  // Typing engine
   SESSION_TTL_MINUTES: z.coerce.number().positive().default(15),
   CLEANUP_INTERVAL_MINUTES: z.coerce.number().positive().default(5),
   MAX_TYPING_VELOCITY_CHARS_PER_50MS: z.coerce.number().positive().default(10),
+
+  // Multiplayer rooms
+  ROOM_MAX_PLAYERS: z.coerce.number().int().positive().default(6),
+  ROOM_COUNTDOWN_SECONDS: z.coerce.number().int().positive().default(3),
+  ROOM_IDLE_TTL_MINUTES: z.coerce.number().positive().default(20),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -24,4 +39,3 @@ const parseEnv = (): Env => {
 };
 
 export const env = parseEnv();
-

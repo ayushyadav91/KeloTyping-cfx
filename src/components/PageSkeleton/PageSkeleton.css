@@ -1,0 +1,91 @@
+/* ── Page skeleton — prevents CLS while lazy route loads ── */
+.page-skeleton {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.page-skeleton__navbar {
+  height: 64px;
+  background: var(--bg-secondary-trans);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-8);
+  gap: var(--space-8);
+}
+
+.page-skeleton__logo {
+  width: 140px;
+  height: 28px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+}
+
+.page-skeleton__nav-links {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.page-skeleton__nav-link {
+  width: 60px;
+  height: 16px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xs);
+}
+
+.page-skeleton__body {
+  flex: 1;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.page-skeleton__title {
+  width: 320px;
+  height: 24px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+
+.page-skeleton__block {
+  height: 200px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+.page-skeleton__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.page-skeleton__card {
+  height: 120px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+/* Shimmer animation on all skeleton parts */
+.page-skeleton__logo,
+.page-skeleton__nav-link,
+.page-skeleton__title,
+.page-skeleton__block,
+.page-skeleton__card {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    rgba(139, 92, 246, 0.06) 50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}

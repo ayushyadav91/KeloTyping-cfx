@@ -1,233 +1,229 @@
-# Kelo Typing Platform - Backend Engine
+# KeloTyping — Backend
 
-An enterprise-grade, high-performance real-time typing platform backend built with **TypeScript**, **Node.js**, **Express**, and **Socket.IO**. Designed for high throughput, sub-millisecond telemetry calculation, robust anti-cheat velocity verification, and real-time state management.
+Real-time typing-speed backend: solo practice sessions **and** live multiplayer
+typing races, over Socket.IO, with JWT + Google OAuth authentication and
+MongoDB persistence.
 
----
-
-## Technical Overview
-
-The Kelo Typing Engine provides a real-time WebSocket connection layer and HTTP REST API for single-player practice and multi-user typing sessions. The platform streams progress updates over WebSockets, computes typing metrics (Words Per Minute, Words Per Second, Accuracy %, and Completion %), and enforces strict anti-cheat rules against macro/bot automation attacks.
-
-### Key Architecture Features
-
-- **Real-Time Telemetry Processing:** Sub-millisecond calculation of WPM (using the standardized 5-character word standard), WPS, accuracy, and overall session progress percentage.
-- **Anti-Cheat Velocity Enforcement:** Detects automated keystroke injection attacks by evaluating character count deltas and instantaneous typing velocity thresholds (`charDelta > 8` in `< 200ms` or instant WPM `> 250`).
-- **Memory-Safe TTL Garbage Collection:** Inactive or abandoned practice sessions are automatically groomed by an active background garbage collection process based on configurable TTL parameters.
-- **Socket & HTTP Rate Limiting:** Built-in sliding-window rate limiters shield WebSocket handlers and HTTP endpoints from denial-of-service attempts.
-- **Strict Contract & Type Safety:** Fully typed Socket.IO contracts (`ClientToServerEvents`, `ServerToClientEvents`, `InterServerEvents`, `SocketData`) and Zod schema validation for incoming payloads.
-- **Production-Grade Resilience:** Structured JSON logging via Winston, centralized HTTP & WebSocket error handling, graceful shutdown handlers (`SIGTERM`, `SIGINT`), and memory-capped payload limits (`maxHttpBufferSize: 1MB`).
+![Node](https://img.shields.io/badge/node-%3E%3D18-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
+![Express](https://img.shields.io/badge/Express-5.x-black)
+![Socket.IO](https://img.shields.io/badge/Socket.IO-4.x-black)
+![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-brightgreen)
+![License](https://img.shields.io/badge/license-ISC-lightgrey)
 
 ---
 
-## Folder Structure
+## Table of contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Project structure](#project-structure)
+- [Getting started](#getting-started)
+- [Environment variables](#environment-variables)
+- [REST API](#rest-api)
+- [Socket.IO API](#socketio-api)
+  - [Authentication](#socket-authentication)
+  - [Solo sessions](#solo-sessions)
+  - [Multiplayer rooms](#multiplayer-rooms)
+- [API docs (Swagger)](#api-docs-swagger)
+- [Data models](#data-models)
+- [Architecture notes](#architecture-notes)
+- [Scripts](#scripts)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Overview
+
+This service provides a full-featured real-time typing platform:
+
+- Solo practice sessions with server-authoritative telemetry and anti-cheat velocity checks.
+- Real-time multiplayer typing races over Socket.IO (create/join room, countdown, live progress broadcasts, match history).
+- JWT + Google OAuth authentication with MongoDB persistence.
+
+## Features
+
+- 🔐 JWT auth (register/login) + Google OAuth ID-token login
+- 🗄️ MongoDB persistence via Mongoose (`User`, `Result`, `Match`)
+- ⌨️ Solo typing sessions — server-computed WPM/accuracy, per-tick anti-cheat
+- 🏁 Multiplayer rooms — create/join by code, ready-up, synced countdown, live race broadcasts, placements, persisted results
+- 📊 Public leaderboard (solo best scores)
+- 📖 Interactive Swagger/OpenAPI docs for the whole REST surface
+- 🛡️ Helmet, CORS, rate limiting (global + auth-specific), structured Winston logging
+- ✅ Fully typed end-to-end (TypeScript)
+
+## Project structure
 
 ```
-server/
-├── src/
-│   ├── config/
-│   │   ├── database.config.ts    # Database connection configuration
-│   │   └── env.config.ts         # Zod environment variable validation
-│   ├── controllers/
-│   │   ├── auth.controller.ts    # Authentication request handlers
-│   │   ├── prompts.controller.ts # REST handlers for text prompts
-│   │   ├── typing.service.ts     # Core typing session state & anti-cheat engine
-│   │   └── typing.socket.ts      # Socket.IO connection manager & event handlers
-│   ├── middlewares/
-│   │   ├── authMiddleware.ts     # Authentication middleware
-│   │   └── rateLimiter.ts        # HTTP & Socket rate limiting rules
-│   ├── models/
-│   │   ├── prompt.model.ts       # Text prompt data access & seed dataset
-│   │   ├── typing.schema.ts      # Zod validation schemas for payload verification
-│   │   ├── typing.types.ts       # Socket.IO contract interfaces & telemetry types
-│   │   └── user.model.ts         # User schema & data model definitions
-│   ├── routes/
-│   │   ├── auth.route.ts         # Router for auth endpoints
-│   │   └── prompts.routes.ts     # Router for text prompt queries
-│   ├── utils/
-│   │   ├── asyncHandler.ts       # Controller exception wrapper
-│   │   ├── errorResponse.ts      # Standardized API error handler & formatters
-│   │   ├── logger.ts             # Structured Winston JSON logging provider
-│   │   └── wpmCalculator.ts      # Metric math (WPM, WPS, Accuracy, Progress)
-│   ├── app.ts                    # Express app configuration & middleware pipeline
-│   └── index.ts                  # Server entry point, HTTP & Socket.IO bootstrapper
+.
+├── server/
+│   ├── src/
+│   │   ├── app.ts                    # Express app: middleware, routes, Swagger
+│   │   ├── index.ts                  # Entry point: connects DB, boots HTTP + Socket.IO
+│   │   ├── config/
+│   │   │   ├── env.config.ts         # zod-validated environment schema
+│   │   │   ├── database.config.ts    # Mongoose connection
+│   │   │   └── googleAuth.config.ts  # Google ID-token verification
+│   │   ├── controllers/
+│   │   │   ├── auth.controller.ts    # register / login / google / me
+│   │   │   ├── result.controller.ts  # save result / history / leaderboard
+│   │   │   ├── typing.service.ts     # solo session engine
+│   │   │   ├── typing.socket.ts      # solo session socket handlers
+│   │   │   ├── room.service.ts       # multiplayer room/player state machine
+│   │   │   └── room.socket.ts        # multiplayer socket handlers
+│   │   ├── middlewares/
+│   │   │   ├── authMiddleware.ts     # REST `protect` + Socket.IO auth middleware
+│   │   │   ├── errorHandler.middleware.ts
+│   │   │   └── rateLimiter.ts
+│   │   ├── models/
+│   │   │   ├── user.model.ts
+│   │   │   ├── result.model.ts
+│   │   │   ├── match.model.ts        # persisted multiplayer race results
+│   │   │   ├── prompt.model.ts       # in-memory prompt bank
+│   │   │   ├── typing.types.ts       # Socket.IO event contracts (client<->server)
+│   │   │   └── typing.schema.ts      # zod validation for socket payloads
+│   │   ├── routes/
+│   │   │   ├── auth.route.ts
+│   │   │   ├── result.route.ts
+│   │   │   └── prompts.routes.ts
+│   │   ├── docs/
+│   │   │   └── openapi.ts            # hand-written OpenAPI 3.0 spec
+│   │   ├── utils/
+│   │   │   ├── generateToken.ts
+│   │   │   ├── asyncHandler.ts
+│   │   │   ├── errorResponse.ts      # AppError / SocketError / RoomError hierarchy
+│   │   │   ├── wpmCalculator.ts
+│   │   │   └── logger.ts             # Winston
+│   │   └── types/
+│   │       └── express.d.ts          # Request.user augmentation
+│   ├── .env.example
+│   ├── package.json
+│   └── tsconfig.json
+├── src/                              # React + Vite Frontend
 ├── package.json
-├── package-lock.json
-└── tsconfig.json
+└── README.md
 ```
 
----
+## Getting started
 
-## API & Protocol Specification
-
-### HTTP REST Endpoints
-
-| Method | Endpoint | Description | Response Payload |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/health` | Server health check and active sessions counter | `{ status: 'OK', environment: string, activeSessions: number, timestamp: string }` |
-| `GET` | `/api/prompts/random` | Fetches a random typing prompt | `{ success: true, data: TextPrompt }` |
-| `GET` | `/api/prompts/:id` | Fetches a specific text prompt by ID | `{ success: true, data: TextPrompt }` |
-
-### WebSocket Event Contracts
-
-#### Client to Server (`ClientToServerEvents`)
-
-- **`start_solo_session`**: Request to initialize a practice session.
-  ```json
-  {
-    "promptId": "prompt_001"
-  }
-  ```
-- **`typing_progress`**: Emitted periodically as the user types text.
-  ```json
-  {
-    "sessionId": "solo_sess_1786536960010_eim31k1",
-    "typedIndex": 42,
-    "correctCharacters": 40
-  }
-  ```
-
-#### Server to Client (`ServerToClientEvents`)
-
-- **`session_started`**: Emitted upon successful session initialization.
-  ```json
-  {
-    "sessionId": "solo_sess_1786536960010_eim31k1",
-    "textPrompt": "Simplicity is prerequisite for reliability...",
-    "characterCount": 130,
-    "startTime": 1786536960010
-  }
-  ```
-- **`stats_update`**: Real-time performance telemetry emitted after every valid progress update.
-  ```json
-  {
-    "sessionId": "solo_sess_1786536960010_eim31k1",
-    "typedIndex": 42,
-    "correctCharacters": 40,
-    "wpm": 84.5,
-    "wps": 1.41,
-    "accuracy": 95.24,
-    "progressPercent": 32.3,
-    "elapsedTimeMs": 5680,
-    "isCompleted": false
-  }
-  ```
-- **`session_summary`**: Emitted when `progressPercent` reaches 100%.
-  ```json
-  {
-    "sessionId": "solo_sess_1786536960010_eim31k1",
-    "finalWpm": 88.2,
-    "finalWps": 1.47,
-    "finalAccuracy": 97.5,
-    "totalTimeMs": 14200,
-    "completedAt": 1786536974210
-  }
-  ```
-- **`error_event`**: Emitted when rate limits, validation errors, or anti-cheat violations occur.
-  ```json
-  {
-    "code": "ANTI_CHEAT_VIOLATION",
-    "message": "Unnatural typing velocity detected. Session progress rejected.",
-    "timestamp": 1786536960500
-  }
-  ```
-
----
-
-## Environment Configuration
-
-The engine uses **Zod** to validate environment variables at startup. Create a `.env` file in the root directory:
-
-```ini
-# Server Environment Setup
-NODE_ENV=development
-PORT=4000
-CORS_ORIGIN=*
-
-# Authentication & Session Limits
-MOCK_AUTH_TOKEN=mock_token_xyz
-SESSION_TTL_MINUTES=15
-CLEANUP_INTERVAL_MINUTES=5
-
-# Security & Anti-Cheat Velocity Thresholds
-MAX_TYPING_VELOCITY_CHARS_PER_50MS=10
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- **Node.js**: v18.0.0 or higher
-- **npm**: v9.0.0 or higher
-
-### Installation
-
-1. Clone the repository and navigate to the backend directory:
-   ```bash
-   cd server
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Development
-
-Run the development server with live reload:
+**Requirements:** Node.js ≥18, a reachable MongoDB instance (local or Atlas).
 
 ```bash
+# 1. Install dependencies
+npm install
+
+# 2. Configure environment
+cp .env.example .env
+
+# 3. Run in dev mode
 npm run dev
 ```
 
-The server will start listening on `http://localhost:4000`.
+## Environment variables
 
-### Production Build & Deployment
+| Variable | Default | Description |
+| --- | --- | --- |
+| `NODE_ENV` | `development` | `development` \| `production` \| `test` |
+| `PORT` | `4000` | HTTP + Socket.IO port |
+| `CORS_ORIGIN` | `*` | Allowed origin for REST + sockets |
+| `MONGO_URI` | — | **Required.** MongoDB connection string |
+| `JWT_SECRET` | — | **Required.** Secret used to sign/verify JWTs |
+| `JWT_EXPIRES_IN` | `7d` | JWT lifetime |
+| `GOOGLE_CLIENT_ID` | — | Required only if using `/api/auth/google` |
+| `SESSION_TTL_MINUTES` | `15` | Solo session idle timeout |
+| `CLEANUP_INTERVAL_MINUTES` | `5` | How often idle solo sessions/rooms are swept |
+| `MAX_TYPING_VELOCITY_CHARS_PER_50MS` | `10` | Anti-cheat threshold |
+| `ROOM_MAX_PLAYERS` | `6` | Default max players per room |
+| `ROOM_COUNTDOWN_SECONDS` | `3` | Countdown length before a race starts |
+| `ROOM_IDLE_TTL_MINUTES` | `20` | Abandoned rooms are reaped after this long |
 
-1. Compile TypeScript to JavaScript:
-   ```bash
-   npm run build
-   ```
-2. Start the production server:
-   ```bash
-   npm start
-   ```
+## REST API
 
----
+Base URL: `http://localhost:4000` (or your configured `PORT`).
 
-## Testing & Quality Assurance
+### Auth
 
-### Type Checking
+| Method | Path | Auth | Body |
+| --- | --- | --- | --- |
+| POST | `/api/auth/register` | — | `{ username, email, password }` |
+| POST | `/api/auth/login` | — | `{ email, password }` |
+| POST | `/api/auth/google` | — | `{ idToken }` |
+| GET | `/api/auth/me` | Bearer | — |
 
-Verify full static type safety across the entire codebase:
+### Results
 
-```bash
-npx tsc --noEmit
+| Method | Path | Auth | Body |
+| --- | --- | --- | --- |
+| POST | `/api/results` | Bearer | `{ wpm, accuracy, errors?, totalTyped, duration? }` |
+| GET | `/api/results/me` | Bearer | — |
+| GET | `/api/results/leaderboard?limit=10` | — | — |
+
+### Prompts
+
+| Method | Path | Auth | Body |
+| --- | --- | --- | --- |
+| GET | `/api/prompts/random` | — | — |
+| GET | `/api/prompts/:id` | — | — |
+
+### Health
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| GET | `/health` | — |
+
+## Socket.IO API
+
+### Socket authentication
+
+Every connection must present a JWT:
+
+```js
+const socket = io("http://localhost:4000", {
+  auth: { token: "<jwt from /api/auth/login or /register>" }
+});
 ```
 
-### Integration & Verification Testing
+### Solo sessions
 
-Run the automated Socket.IO integration test runner:
+| Direction | Event | Payload |
+| --- | --- | --- |
+| Client → Server | `start_solo_session` | `{}` (optional) |
+| Client → Server | `typing_progress` | `{ typedIndex, correctCharacters }` |
+| Server → Client | `session_started` | prompt + session id |
+| Server → Client | `stats_update` | live `{ wpm, accuracy, progressPercent }` |
+| Server → Client | `session_summary` | final stats on completion |
+| Server → Client | `error_event` | `{ code, message, timestamp }` |
 
-```bash
-npx tsx src/testSocketClient.ts
-```
+### Multiplayer rooms
 
-Run the end-to-end CLI simulation test (verifies human typist execution and bot attack anti-cheat interception):
+| Direction | Event | Payload |
+| --- | --- | --- |
+| Client → Server | `create_room` | `{ maxPlayers? }` |
+| Client → Server | `join_room` | `{ code }` |
+| Client → Server | `leave_room` | `{}` |
+| Client → Server | `toggle_ready` | `{}` |
+| Client → Server | `race_progress` | `{ typedIndex, correctCharacters }` |
+| Server → Client | `room_state` | full room + player list, broadcast on any change |
+| Server → Client | `room_countdown` | `{ roomId, secondsRemaining }` |
+| Server → Client | `race_started` | `{ roomId, promptId, textPrompt, characterCount, startTime }` |
+| Server → Client | `race_progress_update` | `{ userId, username, wpm, accuracy, progressPercent }` |
+| Server → Client | `player_finished` | `{ roomId, userId, username, placement, wpm, accuracy }` |
+| Server → Client | `race_summary` | `{ roomId, matchId, results[] }` — sent once the race closes out |
+| Server → Client | `error_event` | `{ code, message, timestamp }` |
 
-```bash
-npx tsx src/scratch/cliTypingClient.ts
-```
+## API docs (Swagger)
 
----
+- Interactive UI: **`GET /api-docs`**
+- Raw OpenAPI 3.0 JSON: **`GET /api-docs.json`**
 
-## Quality & Security Standards
+## Scripts
 
-- **Strict Type Checking:** No implicit `any` types; all Socket handlers and domain models use explicit interfaces.
-- **Sanitized Logging:** Emojis and decorative ASCII banners are omitted in favor of structured Winston JSON logs formatted for log aggregation services (Datadog, CloudWatch, ELK).
-- **Graceful Resource Release:** All timers (`setInterval` / `setTimeout`) are properly cleared and `unref`'d during shutdown sequences to prevent process hangs or memory leaks.
-
----
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Run with `tsx --watch` (auto-restart on file change) |
+| `npm run build` | Compile TypeScript to `dist/` |
+| `npm start` | Run the compiled build (`node dist/index.js`) |
+| `npm run typecheck` | `tsc --noEmit` — no build output, just type errors |
 
 ## License
 

@@ -37,3 +37,13 @@ export class AntiCheatError extends SocketError {
     super(message, 'ANTI_CHEAT_TRIGGERED', 429);
   }
 }
+export class RoomError extends SocketError {
+  constructor(message: string, code = 'ROOM_ERROR') {
+    super(message, code, 400);
+  }
+}
+
+// REST-side alias: identical shape to AppError, kept as its own name because
+// the Express error handler + auth/result controllers were written against
+// `ErrorResponse` (thrown with `new ErrorResponse(message, statusCode)`).
+export class ErrorResponse extends AppError {}

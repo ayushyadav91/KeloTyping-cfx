@@ -1,0 +1,38 @@
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Ambient animated mesh gradient */
+.app-layout::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(139,92,246,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 110%, rgba(34,211,238,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(139,92,246,0.03) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: meshDrift 20s ease-in-out infinite;
+}
+
+.app-layout__main {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.app-layout__content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .app-layout__content { padding: var(--space-4); }
+}

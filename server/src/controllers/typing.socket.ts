@@ -15,7 +15,9 @@ type TypedServer = Server<ClientToServerEvents, ServerToClientEvents, InterServe
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 
 export function registerTypingSocketHandlers(io: TypedServer, socket: TypedSocket): void {
-  const userId = socket.data.user?.id || 'mock_user_101';
+  // socketAuthMiddleware runs before any handler is registered and rejects the
+  // connection outright if there's no valid, verified JWT — so socket.data.user is populated.
+  const userId = socket.data.user?.id || 'anonymous';
 
   logger.info('WebSocket client connected', {
     socketId: socket.id,
